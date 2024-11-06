@@ -3,6 +3,7 @@ package handler
 import (
 	"again/api/database"
 	"again/api/models"
+	"again/api/utils"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -87,8 +88,15 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	token, err := utils.GernateJwt(userId, user.Email)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	msg := fmt.Sprintf("User login successfully with userId : %v", userId)
-	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"massage": msg})
+	w.WriteHeader(http.StatusCreated)
+
+	json.NewEncoder(w).Encode(map[string]string{"masage": msg, " Your access token is": token})
 }
