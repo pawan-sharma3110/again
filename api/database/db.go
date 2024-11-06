@@ -99,3 +99,35 @@ func Login(user models.User) (uuid.UUID, error) {
 
 	return id, nil
 }
+
+func AllUsers() ([]models.User, error) {
+    var users []models.User
+    query := `SELECT userId, email, password FROM users`
+
+    // Execute the query
+    res, err := DB.Query(query)
+    if err != nil {
+        return nil, err
+    }
+    defer res.Close()
+
+    // Loop through the result set
+    for res.Next() {
+        var user models.User
+        // Scan the result into the user struct
+        err := res.Scan(&user.UserId, &user.Email, &user.Password)
+        if err != nil {
+            return nil, err
+        }
+        // Append each user to the users slice
+        users = append(users, user)
+    }
+
+    // Check for any error that might have occurred during iteration
+    if err = res.Err(); err != nil {
+        return nil, err
+    }
+
+    return users, nil
+}
+

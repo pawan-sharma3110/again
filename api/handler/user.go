@@ -4,6 +4,7 @@ import (
 	"again/api/database"
 	"again/api/models"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -26,9 +27,8 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]uuid.UUID{"userID": userId})
 }
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
@@ -49,4 +49,46 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{"userID": *msg})
+}
+
+func GetAllUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	users, err := database.AllUsers()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if users == nil {
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode("No users found in database !!")
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(users)
+}
+func LoginUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var user models.User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		http.Error(w, "Bad Request: Unable to parse request body", http.StatusBadRequest)
+		return
+	}
+	userId, err := database.Login(user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	msg := fmt.Sprintf("User login successfully with userId : %v", userId)
+	w.WriteHeader(http.StatusCreated)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"massage": msg})
 }
