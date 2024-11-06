@@ -50,3 +50,52 @@ func InsertUser(u models.User) (uuid.UUID, error) {
 	}
 	return userID, nil
 }
+
+func DeleteUser(id uuid.UUID) (*string, error) {
+	// SQL query to delete a user by ID
+	query := `DELETE FROM users WHERE userID = $1`
+
+	// Execute the query
+	result, err := DB.Exec(query, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if any rows were affected
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+
+	if rowsAffected == 0 {
+		msg := "No user found with the provided ID"
+		return &msg, nil
+	}
+
+	successMsg := "User deleted successfully"
+	return &successMsg, nil
+}
+
+func Login(user models.User) (uuid.UUID, error) {
+	query := `SELECT userID, password FROM users WHERE email = $1`
+
+	var password string
+	var id uuid.UUID
+
+	// Execute the query
+	err := DB.QueryRow(query, user.Email).Scan(&id, &password)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return uuid.Nil, fmt.Errorf("user not found")
+		}
+		return uuid.Nil, err
+	}
+
+	// password verification logic here
+
+	if user.Password != password {
+		return uuid.Nil, fmt.Errorf("password mismatch")
+	}
+
+	return id, nil
+}
