@@ -72,6 +72,7 @@ func GetAllUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(users)
 }
+
 func LoginUser(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
