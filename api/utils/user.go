@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-var key = []byte("verify_users")
+var Key = []byte("verify_users")
 
 type Claims struct {
 	UserID uuid.UUID `json:"user_id"`
@@ -24,9 +24,10 @@ func GernateJwt(userID uuid.UUID, email string) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(key)
+	tokenString, err := token.SignedString(Key)
 	if err != nil {
 		return "", err
 	}
 	return tokenString, nil
 }
+
